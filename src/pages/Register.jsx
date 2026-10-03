@@ -31,7 +31,7 @@ export default function Register() {
           foto_ktp: await up('ktp'), foto_4x6: await up('f46'), cv: await up('cv'), ijazah: await up('ijazah') })
       }
       await supabase.auth.signOut(); setDone(true)
-    } catch (e) { setMsg(e.message) } finally { setBusy(false) }
+    } catch (e) { setMsg(e?.message || e?.error_description || JSON.stringify(e)) }
   }
   if (done) return <div className="min-h-screen grid place-items-center p-6"><div className="card max-w-sm text-center space-y-3"><h1 className="font-extrabold text-lg">Pendaftaran terkirim</h1>
     <p className="text-sm text-slate-500">{role === 'admin' ? 'Koperasi Anda menunggu persetujuan Super Admin. Kode unik tampil di menu Pengaturan setelah login.' : 'Menunggu persetujuan admin koperasi.'}</p><Link className="btn inline-block" to="/">Ke halaman masuk</Link></div></div>
