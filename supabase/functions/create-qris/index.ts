@@ -24,3 +24,4 @@ Deno.serve(async (req) => {
     return j({ order_id, qr_url: m.actions?.find((x: any) => x.name === 'generate-qr-code')?.url, qr_string: m.qr_string, total })
   } catch (e) { return j({ error: String((e as Error).message || e) }, 400) }
 })
+                                                  
