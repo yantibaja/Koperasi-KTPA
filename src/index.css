@@ -1,0 +1,32 @@
+@tailwind base;@tailwind components;@tailwind utilities;
+html{scroll-behavior:smooth;-webkit-tap-highlight-color:transparent}
+body{background:radial-gradient(700px 420px at 0% -5%,#e7e1ff 0,transparent 60%),radial-gradient(600px 400px at 100% 0%,#ffe3f1 0,transparent 55%),radial-gradient(700px 500px at 50% 110%,#d9fbf1 0,transparent 55%),#f7f5ff;background-attachment:fixed;overscroll-behavior-y:none}
+@keyframes slide{from{opacity:0;transform:translateY(-12px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+.toast{animation:slide .25s ease-out}
+.page{animation:rise .38s cubic-bezier(.2,.8,.2,1)}
+.skel{background:linear-gradient(90deg,rgba(120,110,200,.12),rgba(120,110,200,.28),rgba(120,110,200,.12));background-size:200% 100%;animation:shimmer 1.3s linear infinite;border-radius:1rem}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+@layer components{
+.card{@apply bg-white/80 backdrop-blur-xl rounded-[28px] p-4 shadow-[0_8px_32px_-12px_rgba(80,60,200,.25)] border border-white/70}
+.inp{@apply w-full rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-sm outline-none transition focus:ring-2 focus:ring-brand focus:border-transparent}
+.btn{@apply rounded-2xl bg-gradient-to-r from-brand to-fuchsia-500 text-white font-bold px-5 py-3 text-sm shadow-lg shadow-brand/30 active:scale-95 hover:brightness-110 transition disabled:opacity-50}
+.btn2{@apply rounded-2xl bg-white/90 border border-slate-200 text-ink font-bold px-4 py-2.5 text-sm active:scale-95 hover:bg-white transition}
+.lbl{@apply block text-xs font-bold text-slate-500 mb-1.5 ml-1}}
+/* Mode gelap: menimpa kelas lama tanpa mengubah tiap halaman */
+.dark{color-scheme:dark}
+.dark body{color:#eceaff;background:radial-gradient(700px 420px at 0% -5%,#2a1f63 0,transparent 60%),radial-gradient(600px 400px at 100% 0%,#4a1b45 0,transparent 55%),#0e0b1f;background-attachment:fixed}
+.dark .card{background:rgba(32,27,66,.72);border-color:rgba(255,255,255,.08)}
+.dark .inp{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);color:#fff}
+.dark .btn2{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.12);color:#fff}
+.dark .bg-white{background:#1d1840}.dark .bg-slate-100{background:rgba(255,255,255,.08)}.dark .bg-slate-50{background:rgba(255,255,255,.05)}
+.dark .bg-brand-soft{background:rgba(109,93,252,.22)}.dark .text-brand-dark{color:#b9b0ff}
+.dark .text-slate-500,.dark .text-slate-600{color:#a9a4d6}
+.dark .border-slate-200,.dark .border-slate-100,.dark .border-t{border-color:rgba(255,255,255,.1)}
+.dark .skel{background-color:rgba(255,255,255,.06)}
+
+/* gaya dari versi sebelumnya yang dipakai halaman */
+@keyframes aurora{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.bg-aurora{background:linear-gradient(135deg,#0B0B2B,#2E1065 45%,#4338CA 75%,#0E7490);background-size:220% 220%;animation:aurora 12s ease infinite}
+.judul{font-size:1.6rem;font-weight:800;letter-spacing:-.02em;background:linear-gradient(90deg,#4338CA,#C026D3);-webkit-background-clip:text;background-clip:text;color:transparent}
