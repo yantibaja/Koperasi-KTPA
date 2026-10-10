@@ -151,3 +151,28 @@ Nasabah/penagih dibuat lewat pendaftaran mandiri atau form tambah nasabah; penag
 
 ## Versi 2.1 (tampilan baru)
 Jalankan `supabase/patch_v9.sql` (tenor harian 20-45 hari, mingguan 2-5 minggu; selain itu dihapus). Tampilan baru bergaya Gen Z: gradien, kartu kaca, navigasi bawah di HP, animasi halaman, hitung naik di dashboard, mode gelap, dan banner "Versi baru tersedia" untuk pembaruan otomatis.
+
+## Tenor tetap (patch_v10)
+Harian 20/24/30/45 hari, mingguan 2/3/4/5 minggu. Jalankan `supabase/patch_v10.sql`; tenor lain ditolak database.
+
+## Pembayaran lebih sederhana (patch_v11)
+Pilih tagihan, pilih cara bayar (QRIS / Transfer / Tunai), lalu untuk transfer wajib unggah bukti. Jalankan `supabase/patch_v11.sql` (membuat bucket `bukti_transfer`). Admin melihat foto bukti saat memverifikasi.
+
+## Tarif sesuai foto + Fee (patch_v12)
+Harian 20/24/30/45 hari, mingguan 3/4/5 minggu. Fee per tenor (khusus pemilik) di Pengaturan. Tes koneksi Midtrans di Pengaturan (deploy function `midtrans-cek`). Jalankan `supabase/patch_v12.sql`.
+
+## Notifikasi (patch_v13)
+Ikon 🔔 di aplikasi menampilkan notifikasi (pembayaran berhasil/ditolak, transfer baru untuk admin, tugas tagih baru untuk penagih). Jalankan `supabase/patch_v13.sql`. Notifikasi muncul seketika (Realtime) dan tersimpan sebagai riwayat.
+
+## Versi 2.2: tampilan baru + Absensi (patch_v14)
+Beranda dengan kartu utama dan menu cepat, bar bawah tetap tampil di semua halaman (menu lain lewat "Lainnya"). Absensi foto berwatermark (jam, lokasi, nama, koperasi, peta) wajib untuk penagih dan pemilik. Jalankan `supabase/patch_v14.sql`.
+
+## Absensi wajib & tampilan baru (patch_v14)
+Penagih dan pemilik wajib absen masuk setiap hari lewat kamera dengan watermark (jam, lokasi, nama, nama koperasi, peta). Jalankan `supabase/patch_v14.sql`. Navigasi bawah baru dengan menu "Lainnya" yang memuat semua menu termasuk Pengaturan.
+
+## Versi 2.2: tampilan fintech + Absensi (patch_v14)
+- Beranda bergaya aplikasi koperasi/fintech: kartu hero, menu cepat, navigasi bawah tetap, menu "Semua menu" berupa lembar dari bawah.
+- Absensi wajib masuk untuk pemilik & penagih: kamera langsung terbuka dengan watermark (jam, tanggal, alamat, nama, koperasi, kode foto, peta). Jalankan `supabase/patch_v14.sql`.
+
+## Absensi lengkap (patch_v15)
+Jenis: Absen Masuk, Nasabah Baru, Peminjam Baru, Istirahat, Selesai Istirahat, Absen Pulang. Semua lewat kamera dengan watermark. Jalankan `supabase/patch_v15.sql` (setelah patch_v14).
