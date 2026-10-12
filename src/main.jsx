@@ -6,9 +6,10 @@ import { ToastProvider } from './lib/toast'
 import { ConfirmProvider } from './lib/confirm'
 import UpdateBanner from './components/UpdateBanner'
 import { NotifProvider } from './lib/notif'
+import { AbsensiProvider } from './lib/absensi'
 import App from './App'
 import './index.css'
-createRoot(document.getElementById('root')).render(<HashRouter><ToastProvider><ConfirmProvider><AuthProvider><NotifProvider><App /><UpdateBanner /></NotifProvider></AuthProvider></ConfirmProvider></ToastProvider></HashRouter>)
+createRoot(document.getElementById('root')).render(<HashRouter><ToastProvider><ConfirmProvider><AuthProvider><NotifProvider><AbsensiProvider><App /><UpdateBanner /></AbsensiProvider></NotifProvider></AuthProvider></ConfirmProvider></ToastProvider></HashRouter>)
 if ('serviceWorker' in navigator) window.addEventListener('load', () => {
   navigator.serviceWorker.register(import.meta.env.BASE_URL + 'sw.js').then(reg => {
     reg.addEventListener('updatefound', () => { const w = reg.installing; w?.addEventListener('statechange', () => { if (w.state === 'installed' && navigator.serviceWorker.controller) window.dispatchEvent(new Event('app-update')) }) })

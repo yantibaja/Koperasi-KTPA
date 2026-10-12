@@ -34,3 +34,6 @@ body{background:radial-gradient(700px 420px at 0% -5%,#e7e1ff 0,transparent 60%)
 .sheet{animation:up .3s cubic-bezier(.2,.8,.2,1)}
 @keyframes pop{0%{transform:scale(.3);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
 .pop{animation:pop .5s cubic-bezier(.2,.8,.2,1)}
+.tile-ic{width:3.5rem;height:3.5rem;border-radius:1rem;display:grid;place-items:center;font-size:1.5rem;box-shadow:0 2px 8px rgba(80,60,200,.12);transition:transform .15s}
+.tile-ic:active{transform:scale(.9)}
+.dark .tile-ic{background:rgba(255,255,255,.1)!important}
