@@ -3,7 +3,7 @@ import { supabase, upload } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import TabelAngsuran from '../components/TabelAngsuran'
 import BiayaAdmin from '../components/BiayaAdmin'
-import TesMidtrans from '../components/TesMidtrans'
+import QrisSetting from '../components/QrisSetting'
 import { useToast } from '../lib/toast'
 export default function Pengaturan() {
   const { profile, koperasi, setKoperasi } = useAuth(); const kid = profile.koperasi_id, toast = useToast()
@@ -34,7 +34,7 @@ export default function Pengaturan() {
       <input type="date" className="inp" value={l.tanggal || ''} onChange={e => setL({ ...l, tanggal: e.target.value })} /><input className="inp" placeholder="Keterangan" value={l.keterangan || ''} onChange={e => setL({ ...l, keterangan: e.target.value })} />
       <button className="btn" onClick={async () => { await supabase.from('tanggal_merah').insert({ ...l, koperasi_id: kid }); setL({}); load() }}>Tambah libur</button></div>
     <BiayaAdmin />
-    <TesMidtrans />
+    <QrisSetting />
     <TabelAngsuran />
     <div className="card"><h2 className="font-bold mb-1">Metode pembayaran aktif</h2><p className="text-sm text-slate-500">CASH, TRANSFER, dan QRIS aktif. Nasabah hanya melihat TRANSFER & QRIS; penagih hanya CASH & TRANSFER.</p></div></div>
 }

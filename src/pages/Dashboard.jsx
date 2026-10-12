@@ -4,12 +4,13 @@ import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import { rp, tgl } from '../lib/utils'
+import Ikon from '../components/Ikon'
 const ROLE = { super_admin: 'Super Admin', admin: 'Pemilik', penagih: 'Penagih', nasabah: 'Nasabah' }
 const QUICK = {
-  admin: [['/pinjaman', '💰', 'Pinjaman'], ['/pembayaran', '💳', 'Bayar'], ['/nasabah', '👥', 'Nasabah'], ['/absensi', '📸', 'Absensi'], ['/bukti', '🧾', 'Bukti'], ['/wa', '💬', 'Pesan WA'], ['/tim', '🧑‍💼', 'Tim'], ['/persetujuan', '✅', 'Setuju']],
-  super_admin: [['/koperasi', '🏢', 'Koperasi'], ['/nasabah', '👥', 'Nasabah'], ['/pinjaman', '💰', 'Pinjaman'], ['/persetujuan', '✅', 'Setuju'], ['/pembayaran', '💳', 'Bayar'], ['/absensi', '📸', 'Absensi'], ['/wa', '💬', 'Pesan WA'], ['/bukti', '🧾', 'Bukti']],
-  penagih: [['/pembayaran', '💳', 'Tagih'], ['/absensi', '📸', 'Absensi'], ['/tambah-nasabah', '➕', 'Nasabah'], ['/bukti', '🧾', 'Bukti']],
-  nasabah: [['/pinjaman', '💰', 'Pinjaman'], ['/pembayaran', '💳', 'Bayar']],
+  admin: [['/pinjaman', 'pinjaman', 'Pinjaman'], ['/pembayaran', 'bayar', 'Bayar'], ['/nasabah', 'nasabah', 'Nasabah'], ['/absensi', 'absen', 'Absensi'], ['/bukti', 'bukti', 'Bukti'], ['/wa', 'wa', 'Pesan WA'], ['/tim', 'tim', 'Tim'], ['/persetujuan', 'setuju', 'Setuju']],
+  super_admin: [['/koperasi', 'koperasi', 'Koperasi'], ['/nasabah', 'nasabah', 'Nasabah'], ['/pinjaman', 'pinjaman', 'Pinjaman'], ['/persetujuan', 'setuju', 'Setuju'], ['/pembayaran', 'bayar', 'Bayar'], ['/absensi', 'absen', 'Absensi'], ['/wa', 'wa', 'Pesan WA'], ['/bukti', 'bukti', 'Bukti']],
+  penagih: [['/pembayaran', 'bayar', 'Tagih'], ['/absensi', 'absen', 'Absensi'], ['/tambah-nasabah', 'tambah', 'Nasabah'], ['/bukti', 'bukti', 'Bukti']],
+  nasabah: [['/pinjaman', 'pinjaman', 'Pinjaman'], ['/pembayaran', 'bayar', 'Bayar']],
 }
 function Count({ to, uang }) {
   const [v, setV] = useState(0)
@@ -31,8 +32,8 @@ export default function Dashboard() {
     setD({ nasabah: n.count, aktif: sum((pj.data || []).filter(p => p.status === 'aktif'), p => p.pokok), tunggak: sum(tg.data, x => +x.jumlah + +x.denda), masuk: sum(pm.data, x => x.jumlah), merah: tm.data || [], chart: Object.entries(bln).map(([bulan, total]) => ({ bulan, total })) })
     if (r === 'penagih') { const { data } = await supabase.from('tugas_tagih').select('*, angsuran(jumlah,denda,jatuh_tempo,nasabah:profiles!angsuran_nasabah_id_fkey(nama,no_hp))').neq('status', 'selesai'); setTugas(data || []) }
   })() }, [])
-  const tiles = r === 'nasabah' ? [['⏰', 'Tunggakan', d.tunggak, 1, 'from-rose-500 to-orange-400'], ['✅', 'Sudah dibayar', d.masuk, 1, 'from-emerald-400 to-teal-500']]
-    : [['👥', 'Nasabah', d.nasabah, 0, 'from-sky-500 to-indigo-500'], ['⏰', 'Tunggakan', d.tunggak, 1, 'from-rose-500 to-orange-400'], ['📈', 'Masuk hari ini', d.masuk, 1, 'from-emerald-400 to-teal-500']]
+  const tiles = r === 'nasabah' ? [['jam', 'Tunggakan', d.tunggak, 1, 'from-rose-500 to-orange-400'], ['cek', 'Sudah dibayar', d.masuk, 1, 'from-emerald-400 to-teal-500']]
+    : [['nasabah', 'Nasabah', d.nasabah, 0, 'from-sky-500 to-indigo-500'], ['jam', 'Tunggakan', d.tunggak, 1, 'from-rose-500 to-orange-400'], ['naik', 'Masuk hari ini', d.masuk, 1, 'from-emerald-400 to-teal-500']]
   const hero = r === 'penagih' ? ['Tugas penagihan', tugas.length, 0] : ['Pinjaman aktif', d.aktif, 1]
   return <div className="space-y-5">
     <div className="relative overflow-hidden rounded-[32px] p-5 text-white shadow-xl bg-gradient-to-br from-brand via-violet-500 to-fuchsia-500">
@@ -40,11 +41,11 @@ export default function Dashboard() {
       <div className="relative"><div className="flex items-center justify-between"><div><p className="text-xs text-white/75">{tgl(new Date())}</p><h1 className="text-2xl font-extrabold tracking-tight">Halo, {(profile.nama || '').split(' ')[0]} 👋</h1></div><span className="rounded-full bg-white/20 px-3 py-1 text-xs font-bold">{ROLE[r]}</span></div>
         <div className="mt-5 text-xs font-bold text-white/80">{hero[0]}</div><div className="text-3xl font-extrabold tracking-tight"><Count to={r === 'penagih' ? tugas.length : hero[1]} uang={!!hero[2]} /></div>
         <p className="text-xs text-white/70 mt-1 truncate">{koperasi?.nama}</p></div></div>
-    <div className={`grid gap-3 ${QUICK[r].length > 4 ? 'grid-cols-4 md:grid-cols-8' : 'grid-cols-4'}`}>{QUICK[r].map(([to, ic, l]) => <Link key={to} to={to} className="flex flex-col items-center gap-1.5 active:scale-95 transition"><span className="w-14 h-14 rounded-[20px] grid place-items-center text-2xl bg-white/80 shadow-md border border-white/70">{ic}</span><span className="text-[11px] font-bold text-center">{l}</span></Link>)}</div>
-    {r === 'penagih' ? <div className="card"><h2 className="font-bold mb-2">🧾 Tugas penagihan ({tugas.length})</h2>
+    <div className={`grid gap-3 ${QUICK[r].length > 4 ? 'grid-cols-4 md:grid-cols-8' : 'grid-cols-4'}`}>{QUICK[r].map(([to, ic, l]) => <Link key={to} to={to} className="flex flex-col items-center gap-1.5 active:scale-95 transition"><span className="w-14 h-14 rounded-[20px] grid place-items-center bg-white/80 shadow-md border border-white/70 text-brand"><Ikon n={ic} size={26} /></span><span className="text-[11px] font-semibold text-center">{l}</span></Link>)}</div>
+    {r === 'penagih' ? <div className="card"><h2 className="font-bold mb-2">Tugas penagihan ({tugas.length})</h2>
       {tugas.length === 0 ? <p className="text-sm text-slate-500">Belum ada tagihan terlambat yang ditugaskan. Santai dulu 😎</p> : tugas.map(t => <div key={t.id} className="flex justify-between py-2 border-t text-sm"><span>{t.angsuran?.nasabah?.nama}</span><b>{rp(+t.angsuran?.jumlah + +t.angsuran?.denda)}</b></div>)}</div>
     : <><div className="grid grid-cols-2 gap-3">{tiles.map(([ic, l, v, u, c], i) => <div key={l} className={`rounded-[28px] bg-gradient-to-br ${c} text-white p-4 shadow-lg ${tiles.length === 3 && i === 0 ? 'col-span-2' : ''}`}>
-      <div className="text-2xl bg-white/25 w-11 h-11 rounded-2xl grid place-items-center">{ic}</div><div className="text-xs font-bold text-white/80 mt-3">{l}</div><div className="text-xl font-extrabold mt-0.5"><Count to={v} uang={!!u} /></div></div>)}</div>
-      {r !== 'nasabah' && <div className="card h-64"><h2 className="font-bold mb-2">📊 Pinjaman per bulan</h2><ResponsiveContainer width="100%" height="88%"><BarChart data={d.chart}><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#6D5DFC" /><stop offset="1" stopColor="#E879F9" /></linearGradient></defs><XAxis dataKey="bulan" fontSize={11} axisLine={false} tickLine={false} /><Tooltip formatter={v => rp(v)} cursor={{ fill: 'rgba(109,93,252,.08)' }} /><Bar dataKey="total" fill="url(#g)" radius={[10, 10, 4, 4]} /></BarChart></ResponsiveContainer></div>}
-      <div className="card"><h2 className="font-bold mb-2">🗓️ Tanggal merah</h2>{d.merah.length === 0 ? <p className="text-sm text-slate-500">Belum ada tanggal libur.</p> : d.merah.map(m => <div key={m.id} className="text-sm py-1"><b className="text-rose-500">{tgl(m.tanggal)}</b> · {m.keterangan}</div>)}</div></>}</div>
+      <div className="bg-white/25 w-11 h-11 rounded-2xl grid place-items-center"><Ikon n={ic} size={24} /></div><div className="text-xs font-bold text-white/80 mt-3">{l}</div><div className="text-xl font-extrabold mt-0.5"><Count to={v} uang={!!u} /></div></div>)}</div>
+      {r !== 'nasabah' && <div className="card h-64"><h2 className="font-bold mb-2">Pinjaman per bulan</h2><ResponsiveContainer width="100%" height="88%"><BarChart data={d.chart}><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#6D5DFC" /><stop offset="1" stopColor="#E879F9" /></linearGradient></defs><XAxis dataKey="bulan" fontSize={11} axisLine={false} tickLine={false} /><Tooltip formatter={v => rp(v)} cursor={{ fill: 'rgba(109,93,252,.08)' }} /><Bar dataKey="total" fill="url(#g)" radius={[10, 10, 4, 4]} /></BarChart></ResponsiveContainer></div>}
+      <div className="card"><h2 className="font-bold mb-2">Tanggal merah</h2>{d.merah.length === 0 ? <p className="text-sm text-slate-500">Belum ada tanggal libur.</p> : d.merah.map(m => <div key={m.id} className="text-sm py-1"><b className="text-rose-500">{tgl(m.tanggal)}</b> · {m.keterangan}</div>)}</div></>}</div>
 }
