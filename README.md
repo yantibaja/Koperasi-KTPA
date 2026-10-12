@@ -176,3 +176,18 @@ Penagih dan pemilik wajib absen masuk setiap hari lewat kamera dengan watermark 
 
 ## Absensi lengkap (patch_v15)
 Jenis: Absen Masuk, Nasabah Baru, Peminjam Baru, Istirahat, Selesai Istirahat, Absen Pulang. Semua lewat kamera dengan watermark. Jalankan `supabase/patch_v15.sql` (setelah patch_v14).
+
+## Perbaikan Absensi (v2.3.1)
+Tombol potret tidak lagi menunggu alamat/peta (diberi batas waktu), lokasi punya cadangan bila GPS lambat, dan tombol kegiatan selalu bisa diklik dengan penjelasan bila belum boleh.
+
+## Versi 2.4: navigasi modern + absensi tidak lagi memblokir login
+- Navigasi bawah bergaya aplikasi modern: ikon garis, tombol utama menonjol di tengah (Absensi untuk pemilik/penagih, Bayar untuk nasabah).
+- Absensi dibuka dari menu/tombol Absensi (tidak lagi dipaksa saat login). Jika belum absen masuk, beranda menampilkan pengingat.
+- File `AbsenGate.jsx` tidak dipakai lagi (boleh dihapus). File baru: `src/components/Ikon.jsx`.
+
+## Versi 2.4: navigasi modern + absensi tidak lagi memblokir
+- Absensi dibuka hanya saat menu Absensi diketuk. Pemilik/penagih yang belum absen masuk melihat pengingat kuning dan titik penanda, tetapi aplikasi tidak terkunci (AbsenGate dihapus).
+- Navigasi bawah baru: tab ikon garis, tombol tengah menonjol (Absensi untuk pemilik/penagih), dan "Lainnya". Ikon SVG di `src/components/Ikon.jsx`.
+
+## QRIS unggahan (patch_v16)
+Pemilik mengunggah gambar QRIS di Pengaturan → QRIS koperasi. Nasabah yang memilih QRIS melihat gambar itu, membayar, lalu mengunggah bukti; admin memverifikasi. Midtrans hanya dicoba bila mode "Midtrans + cadangan" dipilih. Jalankan `supabase/patch_v16.sql`.
