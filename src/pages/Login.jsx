@@ -7,7 +7,7 @@ import { useTheme } from '../lib/theme'
 import { APP_VERSION } from '../lib/version'
 import InstallButton from '../components/InstallButton'
 const logo = import.meta.env.BASE_URL + 'logo.png'
-const OPS = [['nasabah', '🙋', 'Nasabah', 'Ajukan & bayar pinjaman', 'from-emerald-400 to-teal-500'], ['penagih', '🧾', 'Penagih', 'Tagih & catat pembayaran', 'from-amber-400 to-orange-500'], ['admin', '🏢', 'Koperasi Baru', 'Daftarkan koperasi Anda', 'from-violet-500 to-indigo-600']]
+const OPS = [['nasabah', '🙋', 'Nasabah', 'Ajukan & bayar pinjaman', 'from-emerald-400 to-teal-500'], ['penagih', '🧾', 'Penagih', 'Tagih & catat pembayaran', 'from-yellow-400 to-orange-500'], ['admin', '🏢', 'Koperasi Baru', 'Daftarkan koperasi Anda', 'from-violet-500 to-indigo-600']]
 export default function Login() {
   const toast = useToast(), [dark, toggle] = useTheme(), [id, setId] = useState(''), [pw, setPw] = useState(''), [busy, setBusy] = useState(false)
   const go = async () => {
