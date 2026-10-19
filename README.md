@@ -1,193 +1,160 @@
-# 🏦 Koperasi Harian (Koperasi Tri Putra Abadi)
+# Koperasi Harian (Koperasi Tri Putra Abadi)
 
-Aplikasi manajemen koperasi simpan pinjam: pinjaman harian & bulanan, tagihan, pembayaran QRIS (Midtrans), penagihan WhatsApp, dan aplikasi yang bisa dipasang di HP (PWA).
+Aplikasi manajemen koperasi simpan pinjam: pinjaman harian dan mingguan, tagihan, pembayaran (QRIS unggahan, transfer, tunai), absensi kamera, notifikasi, penagihan WhatsApp, dan bisa dipasang di HP (PWA).
 
-**Teknologi:** React + Vite + TailwindCSS · Supabase (Auth, Database, Storage, Edge Functions) · Midtrans QRIS · GitHub Pages.
-**Alamat:** https://yantibaja.github.io/Koperasi-KTPA/ · Halaman publik harga: `/#/produk`
+**Teknologi:** React + Vite + TailwindCSS · Supabase (Auth, Database, Storage, Edge Functions) · GitHub Pages
+**Alamat:** https://yantibaja.github.io/Koperasi-KTPA/ · halaman harga publik: `/#/produk`
+**Versi saat ini:** 2.5.1 (tertulis di halaman masuk dan menu Lainnya)
 
 ---
 ## 1. Role dan akses
 | Role | Akses |
 |---|---|
-| Super Admin | Semua koperasi, aktif/nonaktifkan koperasi, daftar blokir NIK/No HP |
-| Admin Koperasi | Penuh untuk koperasinya (daftar langsung aktif, tanpa persetujuan) |
-| Penagih | Tugas tagih yang ditugaskan; bayar CASH & TRANSFER; tambah nasabah (menunggu persetujuan admin) |
-| Nasabah | Pinjaman & tagihan sendiri; bayar TRANSFER & QRIS |
+| Super Admin | Semua koperasi, persetujuan koperasi, daftar blokir |
+| Pemilik (admin koperasi) | Penuh untuk koperasinya: nasabah, pinjaman, pembayaran, tim, absensi tim, pengaturan, fee, QRIS |
+| Penagih | Tugas tagih, catat pembayaran (tunai/transfer), tambah nasabah, absensi, bukti pinjaman |
+| Nasabah | Pinjaman dan tagihan sendiri, bayar lewat QRIS atau transfer |
 
-Nasabah dan penagih mendaftar dengan **kode koperasi**, lalu admin mengecek data dan foto di menu **Persetujuan**.
+Nasabah dan penagih mendaftar dengan **kode koperasi**; pemilik menyetujui di menu Persetujuan. Koperasi baru dan pemiliknya langsung aktif.
 
 ## 2. Fitur
-- Pendaftaran dengan validasi (NIK 16 digit angka, huruf/angka dipisah), foto dikompres otomatis
-- Pinjaman memakai **tabel angsuran** (harian 20-45 hari, mingguan 2-5 minggu), bisa diedit admin; edit/hapus pinjaman, status Aktif/Lunas/Batal
-- Pembayaran: QRIS (otomatis lunas lewat webhook), transfer (diverifikasi admin), tunai (penagih)
-- Denda otomatis harian, tanggal merah, tugas tagih otomatis (cron)
-- Pesan WhatsApp: template promo/sapaan/pengingat/terima kasih + tabel angsuran, tagih via WA
-- Hapus nasabah (beserta data & foto), blokir NIK/No HP
-- Halaman publik Produk & Harga (untuk verifikasi Midtrans)
-- Bisa dipasang sebagai aplikasi (PWA), tampilan layar penuh
+- **Pendaftaran** dengan validasi (NIK 16 digit angka, huruf dan angka dipisah), foto dikompres otomatis.
+- **Tarif:** harian 20 / 24 / 30 / 45 hari, mingguan 3 / 4 / 5 minggu. Tabel cicilan bisa diedit pemilik di Pengaturan.
+- **Pinjaman:** buat, edit, hapus, ubah status; jadwal angsuran otomatis; fee per tenor (hanya terlihat pemilik).
+- **Pembayaran:**
+  - QRIS: nasabah melihat gambar QRIS koperasi yang diunggah pemilik, membayar, lalu mengunggah bukti.
+  - Transfer: pilih rekening, salin nomor, unggah bukti.
+  - Tunai: dicatat penagih atau pemilik.
+  - Pemilik memverifikasi bukti (Terima/Tolak); tagihan lunas setelah diterima.
+- **Absensi (pemilik dan penagih):** kamera langsung terbuka dengan watermark (jam, tanggal, alamat, nama, koperasi, kegiatan, kode foto, peta). Enam jenis: Masuk, Nasabah Baru, Peminjam Baru, Istirahat, Selesai Istirahat, Pulang. Belum absen masuk = pengingat kuning (tidak memblokir aplikasi).
+- **Notifikasi** dalam aplikasi (ikon lonceng): pembayaran berhasil/ditolak, bukti baru, tugas tagih, absensi.
+- **Pesan WhatsApp:** template promo/sapaan/pengingat + tabel angsuran; tagih via WA.
+- **Bukti Penerimaan Pinjaman:** cetak terisi otomatis atau kosong (3 per A4).
+- Denda otomatis, tanggal merah, tugas tagih otomatis (cron), blokir NIK/No HP, hapus nasabah.
+- **Tampilan:** navigasi bawah modern dengan tombol tengah menonjol, ikon garis, mode gelap, banner "Versi baru tersedia".
 
 ## 3. Struktur folder
 ```
 Koperasi-KTPA/
 ├── .github/workflows/deploy.yml
-├── .gitignore · .env.example · README.md
 ├── index.html · package.json · vite.config.js
-├── tailwind.config.js · postcss.config.js
+├── tailwind.config.js · postcss.config.js · README.md
 ├── public/
-│   ├── logo.png · bukti-bg.png · icon-192.png · icon-512.png · icon-maskable-512.png
+│   ├── logo.png · bukti-bg.png
+│   ├── icon-192.png · icon-512.png · icon-maskable-512.png
 │   ├── manifest.webmanifest · sw.js
 ├── supabase/
-│   ├── schema.sql  (skema lengkap + patch awal)
-│   ├── patch_lengkap.sql · patch_v3.sql · patch_v4.sql · patch_v5.sql · patch_v6.sql
-│   ├── config.toml
-│   └── functions/ create-qris · cek-tunggakan · midtrans-webhook  (index.ts)
+│   ├── schema.sql · patch_*.sql · config.toml
+│   └── functions/ cek-tunggakan · create-qris · midtrans-cek · midtrans-webhook  (index.ts)
 └── src/
     ├── main.jsx · App.jsx · index.css
-    ├── components/ FormDaftar · TabelAngsuran · InstallButton
-    ├── lib/ supabase.js · auth · utils · Foto · toast · confirm · tempClient
-    └── pages/ Login · Register · Produk · Dashboard · Nasabah · TambahNasabah · Bukti
-              Pinjaman · Pembayaran · Tim · Approval · PesanWA · Pengaturan · Koperasi
+    ├── components/ BiayaAdmin · FormDaftar · Ikon · InstallButton · KameraAbsen · NotifBell
+    │               QrisSetting · TabelAngsuran · TesMidtrans · UpdateBanner
+    ├── lib/ Foto · absen · auth · confirm · notif · supabase · tempClient · theme · toast · utils · version
+    └── pages/ Absensi · Approval · Bukti · Dashboard · Koperasi · Login · Nasabah · Pembayaran
+               Pengaturan · PesanWA · Pinjaman · Produk · Register · TambahNasabah · Tim
 ```
-**Jangan ditimpa:** `src/lib/supabase.js` (berisi URL & anon key Anda), `vite.config.js` (cek `base`), `.github/workflows/deploy.yml` (versi tanpa `cache: npm`).
+**Jangan menimpa** `src/lib/supabase.js` (berisi URL dan key Anda), `vite.config.js` (`base` harus `'/Koperasi-KTPA/'`), dan `.github/workflows/deploy.yml`.
 
-## 4. Pemasangan dari nol
-### A. Database (Supabase → SQL Editor), urut:
+## 4. File baru sejak versi 2.2 dan letaknya
+| File | Letak | Fungsi |
+|---|---|---|
+| `Ikon.jsx` | `src/components/` | Ikon garis modern (SVG) untuk menu |
+| `NotifBell.jsx` | `src/components/` | Tombol lonceng notifikasi |
+| `UpdateBanner.jsx` | `src/components/` | Banner "Versi baru tersedia" |
+| `KameraAbsen.jsx` | `src/components/` | Kamera absensi + watermark |
+| `QrisSetting.jsx` | `src/components/` | Unggah QRIS koperasi (Pengaturan) |
+| `BiayaAdmin.jsx` | `src/components/` | Fee per tenor, khusus pemilik |
+| `TesMidtrans.jsx` | `src/components/` | Tes koneksi Midtrans (opsional) |
+| `TabelAngsuran.jsx` | `src/components/` | Editor tabel cicilan |
+| `notif.jsx` | `src/lib/` | Mesin notifikasi + lembar riwayat |
+| `theme.js` | `src/lib/` | Mode gelap |
+| `absen.js` | `src/lib/` | Lokasi, alamat, peta, watermark, jenis absensi |
+| `confirm.jsx` | `src/lib/` | Dialog konfirmasi |
+| `version.js` | `src/lib/` | Nomor versi |
+| `Absensi.jsx` | `src/pages/` | Halaman absensi + kehadiran tim |
+| `Bukti.jsx` · `Koperasi.jsx` · `Produk.jsx` · `TambahNasabah.jsx` | `src/pages/` | Bukti pinjaman, kelola koperasi, harga publik, tambah nasabah |
+| `bukti-bg.png` | `public/` | Latar bukti penerimaan pinjaman |
+| `manifest.webmanifest` · `sw.js` · `icon-*.png` | `public/` | PWA (bisa dipasang) |
+| `patch_v11.sql` … `patch_v16.sql` | `supabase/` | Lihat bagian 5 |
+| `midtrans-cek` · `midtrans-webhook` | `supabase/functions/` | Opsional (hanya bila memakai Midtrans) |
+
+`src/components/AbsenGate.jsx` sudah tidak dipakai; boleh dihapus.
+
+## 5. Database (Supabase → SQL Editor)
+**Instal baru, jalankan berurutan:**
 1. `schema.sql`
-2. `patch_v3.sql` (bunga Rupiah, tenor hari/bulan, NIK unik)
-3. `patch_v4.sql` (tabel angsuran + isi tarif standar)
+2. `patch_v3.sql` (kolom tenor hari/minggu, NIK unik)
+3. `patch_v4.sql` (tabel angsuran)
 4. `patch_v5.sql` (data publik halaman harga)
-5. `patch_v6.sql` (hapus pinjaman & nasabah)
-6. `patch_v8.sql` (biaya admin khusus pemilik; berdiri sendiri, patch_v7 tidak perlu)
-7. `patch_v9.sql` (tarif: harian tenor 20-45 hari, mingguan 2-5 minggu)
+5. `patch_v6.sql` (hapus pinjaman/nasabah)
+6. `patch_v8.sql` (jenis minggu, biaya admin; berdiri sendiri)
+7. `patch_v11.sql` (bukti transfer + bucket `bukti_transfer`)
+8. `patch_v12.sql` (tarif sesuai foto + fee per tenor)
+9. `patch_v13.sql` (notifikasi)
+10. `patch_v14.sql` (absensi + bucket `absensi`)
+11. `patch_v15.sql` (enam jenis absensi + aturan urutan)
+12. `patch_v16.sql` (QRIS unggahan)
 
-Jika database sudah berjalan, jalankan hanya patch yang belum pernah dijalankan. `patch_lengkap.sql` sudah ada di bagian bawah `schema.sql`.
+`patch_v7.sql`, `patch_v9.sql`, dan `patch_v10.sql` sudah tergantikan dan **tidak perlu** dijalankan. Untuk database yang sudah berjalan, jalankan hanya patch yang belum pernah dijalankan.
 
-### B. Pengaturan Auth
-Authentication → Providers → Email: **Enable signups** nyala, **Confirm email** mati (login No HP memakai email sintetis `nohp@hp.koperasi.app`).
+Pengaturan Auth: Authentication → Providers → Email: **Enable signups** nyala, **Confirm email** mati.
 
-### C. Super Admin
-Daftar dulu lewat "Koperasi Baru", lalu jalankan (ganti email):
+**Super Admin** (ganti email):
 ```sql
 update profiles set role='super_admin', status='approved', koperasi_id=null
 where id=(select id from auth.users where email='GANTI@EMAIL.COM');
 ```
 
-### D. Edge Functions (Supabase → Edge Functions → Deploy new function → Via Editor)
-| Nama persis | Isi dari | Verify JWT |
+## 6. Edge Functions (opsional kecuali cek-tunggakan)
+| Nama persis | Fungsi | Verify JWT |
 |---|---|---|
-| `create-qris` | `functions/create-qris/index.ts` | Nyala |
-| `cek-tunggakan` | `functions/cek-tunggakan/index.ts` | Nyala |
-| `midtrans-webhook` | `functions/midtrans-webhook/index.ts` | **Mati** |
+| `cek-tunggakan` | Hitung denda dan buat tugas tagih (tombol di Kelola Tim, bisa dijadwalkan cron) | Nyala |
+| `create-qris` | QR otomatis Midtrans (hanya mode "Midtrans + cadangan") | Nyala |
+| `midtrans-cek` | Tes Server Key Midtrans | Nyala |
+| `midtrans-webhook` | Terima notifikasi pembayaran Midtrans | **Mati** |
 
-Folder `supabase/functions` di GitHub hanya arsip; yang aktif adalah yang ditempel di dashboard Supabase.
+Secret Midtrans (hanya jika dipakai): `MIDTRANS_SERVER_KEY` dan `MIDTRANS_PROD` (`false` untuk Sandbox). Panduan rinci ada di `PANDUAN-MIDTRANS.md`.
 
-### E. Secrets Midtrans (Edge Functions → Secrets)
-| Nama | Isi | Dari |
-|---|---|---|
-| `MIDTRANS_SERVER_KEY` | Server Key (Sandbox `SB-Mid-server-…`) | Midtrans → Settings → Access Keys |
-| `MIDTRANS_PROD` | `false` (Sandbox) / `true` (produksi) | Anda tentukan |
+## 7. Pasang di GitHub Pages
+1. `vite.config.js`: `base: '/Koperasi-KTPA/'`.
+2. Settings → Pages → Source: **GitHub Actions**.
+3. Setiap commit memicu build. Tunggu hijau di tab Actions.
 
-Key dan mode harus sepasang. Simpan hanya di Supabase Secrets, jangan di GitHub.
+**Urutan unggah yang aman:** jalankan SQL dulu, unggah semua file baru, dan jadikan `src/App.jsx` commit terakhir. Jika ada file yang terlewat, Actions merah dan nama file tertulis di log.
 
-### F. Midtrans Dashboard
-1. Aktifkan **QRIS** (Settings → Payment).
-2. Payment Notification URL: `https://gdwtnwsmiykobbfkfqae.supabase.co/functions/v1/midtrans-webhook`
-3. Business Website: `https://yantibaja.github.io/Koperasi-KTPA/#/produk`
+## 8. Cara memakai fitur baru
+- **QRIS koperasi:** Pengaturan → QRIS koperasi → unggah gambar QRIS. Nasabah memilih QRIS, membayar, unggah bukti. Pemilik memverifikasi di Pembayaran.
+- **Fee per tenor:** Pengaturan → Fee per tenor (tidak terlihat penagih dan nasabah).
+- **Absensi:** menu Absensi (tombol kamera di tengah) → pilih kegiatan → kamera terbuka → potret → Gunakan foto. Nasabah/Peminjam Baru meminta nama dulu. Izinkan Kamera dan Lokasi saat diminta.
+- **Pasang sebagai aplikasi:** tombol Pasang aplikasi di halaman masuk atau menu Lainnya.
 
-### G. Cron cek tunggakan harian
-Aktifkan `pg_cron` dan `pg_net` (Database → Extensions), lalu jalankan blok cron di bawah `schema.sql` (isi `PROJECT_REF` dan service role key). Tes manual: **Kelola Tim → Cek tunggakan sekarang**.
-
-### H. GitHub Pages
-1. `vite.config.js`: `base: '/Koperasi-KTPA/'`
-2. Settings → Pages → Source: **GitHub Actions**
-3. Commit file; tab Actions harus hijau, lalu Pages → **Visit site**
-
-## 5. Pasang sebagai aplikasi (PWA)
-Buka situs di Chrome → tombol **📲 Pasang aplikasi** (atau ⋮ → Instal aplikasi). Hapus pintasan lama dulu. iPhone: Safari → Bagikan → Tambah ke Layar Utama.
-
-## 6. Domain sendiri (opsional)
-DNS: CNAME `app` → `yantibaja.github.io` (atau 4 catatan A GitHub Pages untuk domain utama). GitHub → Settings → Pages → Custom domain. **Ubah `base` di `vite.config.js` menjadi `'/'`** atau layar akan putih.
-
-## 7. Alur uji coba
-1. Admin daftar → Pengaturan: catat kode koperasi, isi rekening, denda, tanggal merah, cek Tabel angsuran.
-2. Nasabah/penagih daftar dengan kode → admin setujui di Persetujuan.
-3. Admin: Pinjaman → pilih nasabah, jenis, jumlah, tenor.
-4. Nasabah: Pembayaran → QRIS (lunas otomatis) atau Transfer (admin verifikasi).
-5. Tunggakan: Kelola Tim → tugaskan ke penagih → penagih mencatat bayar.
-6. Pesan WA: tagih terlambat dan broadcast marketing.
-
-## 8. Masalah umum
-| Gejala | Solusi |
+## 9. Masalah umum
+| Gejala | Penyebab / solusi |
 |---|---|
-| Layar putih | `base` tidak cocok dengan alamat, atau Pages Source bukan GitHub Actions |
-| Registrasi gagal/lama | Cek Logs → Auth; pastikan `supabase.js` benar & Confirm email mati |
-| "Failed to send a request to the Edge Function" | Function belum di-deploy / nama salah / kode lama |
-| QRIS error "unauthorized" | Server Key salah atau tidak sepasang dengan `MIDTRANS_PROD` |
-| QRIS dibayar tapi belum lunas | Webhook belum dipasang, Verify JWT belum mati, atau URL notifikasi salah |
-| Pinjaman gagal disimpan/hapus | Jalankan patch SQL yang belum dijalankan |
-| Tabel harga publik kosong | Jalankan `patch_v5.sql`; tarif yang total bayarnya < pokok disembunyikan |
-| Tombol "Pasang aplikasi" tidak muncul | Gunakan Chrome (HTTPS), hapus pintasan lama, muat ulang 2x |
+| Ikon Absensi kembali ke Beranda | `src/App.jsx` di GitHub masih versi lama; unggah versi terbaru |
+| Actions merah setelah unggah | Ada file yang terlewat (lihat tabel bagian 4) |
+| Layar tidak pas lebar / ada sisa kosong di kanan | Pastikan `index.css` dan `index.html` terbaru terunggah (versi 2.5.1) |
+| Banner kuning pudar / lencana tanpa warna | Unggah `tailwind.config.js` dan file komponen terbaru |
+| Kamera atau lokasi tidak bisa | Izinkan Kamera dan Lokasi: ketuk gembok di kolom alamat → Izin; buka lewat Chrome |
+| "QRIS koperasi belum diatur" | Pemilik belum mengunggah QRIS di Pengaturan |
+| Halaman Absensi menampilkan kotak merah | Jalankan `patch_v14.sql` lalu `patch_v15.sql` |
+| Tabel/kolom tidak ditemukan | Jalankan patch SQL yang belum dijalankan (urutan bagian 5) |
+| Notifikasi tidak muncul | Jalankan `patch_v13.sql` |
+| Midtrans: Unknown Merchant / channel not activated | Hanya relevan bila memakai mode Midtrans; lihat `PANDUAN-MIDTRANS.md` |
 
-## 9. Biaya admin
-Biaya admin (default 5%) diatur di Pengaturan dan hanya terlihat admin koperasi/pemilik. Penagih dan nasabah hanya melihat angsuran; datanya disimpan di tabel terpisah dengan akses khusus admin.
-
-## 10. Riwayat pembaruan
+## 10. Riwayat versi
 | Versi | Isi |
 |---|---|
-| Awal | Skema, role, pendaftaran, pinjaman, pembayaran |
-| Lengkap | Webhook Midtrans, verifikasi transfer, tugas tagih, kelola koperasi |
-| v3 | Validasi form, UI & toast baru, bunga Rupiah, tenor hari/bulan, form tambah nasabah |
-| v4 | Tabel angsuran (editable), perbaikan pesan error QRIS |
-| v5 | Halaman publik Produk & Harga |
-| v6 | Edit/hapus pinjaman, hapus nasabah, Pesan WA baru |
-| v7 | PWA (bisa dipasang) |
-| v8 | Tarif baru: harian 10/24/30 hari, mingguan 1-4 minggu, pengaturan biaya admin (`patch_v7.sql`) |
-| v9 | Hanya harian & mingguan (bulanan dihapus); biaya admin 5% hanya terlihat pemilik (`patch_v8.sql`) |
-| v11 | Versi 2.0: tampilan baru (Gen Z), bottom nav, animasi, pembaruan otomatis; tarif harian 20-45 hari & mingguan 2-5 minggu (`patch_v9.sql`) |
-| v10 | Bukti Penerimaan Pinjaman (cetak, terisi otomatis atau kosong); SQL v8 diperbaiki |
+| 2.0–2.1 | Tampilan baru, mode gelap, PWA, tarif harian/mingguan |
+| 2.2 | Beranda bergaya fintech, absensi dengan kamera dan watermark |
+| 2.3 | Enam jenis absensi dengan aturan urutan, perbaikan kamera |
+| 2.4 | Navigasi bawah modern + ikon garis; absensi tidak lagi memblokir login |
+| 2.5 | QRIS unggahan menggantikan Midtrans sebagai bawaan |
+| 2.5.1 | Perbaikan layar melebar dan warna banner/lencana |
 
 ## 11. Batasan
-Nasabah/penagih dibuat lewat pendaftaran mandiri atau form tambah nasabah; penagih tidak dihapus permanen (hanya dinonaktifkan); penugasan tagih per area masih manual. Edit data nasabah masih memakai dialog bawaan browser.
-
-## Versi 2.1 (tampilan baru)
-Jalankan `supabase/patch_v9.sql` (tenor harian 20-45 hari, mingguan 2-5 minggu; selain itu dihapus). Tampilan baru bergaya Gen Z: gradien, kartu kaca, navigasi bawah di HP, animasi halaman, hitung naik di dashboard, mode gelap, dan banner "Versi baru tersedia" untuk pembaruan otomatis.
-
-## Tenor tetap (patch_v10)
-Harian 20/24/30/45 hari, mingguan 2/3/4/5 minggu. Jalankan `supabase/patch_v10.sql`; tenor lain ditolak database.
-
-## Pembayaran lebih sederhana (patch_v11)
-Pilih tagihan, pilih cara bayar (QRIS / Transfer / Tunai), lalu untuk transfer wajib unggah bukti. Jalankan `supabase/patch_v11.sql` (membuat bucket `bukti_transfer`). Admin melihat foto bukti saat memverifikasi.
-
-## Tarif sesuai foto + Fee (patch_v12)
-Harian 20/24/30/45 hari, mingguan 3/4/5 minggu. Fee per tenor (khusus pemilik) di Pengaturan. Tes koneksi Midtrans di Pengaturan (deploy function `midtrans-cek`). Jalankan `supabase/patch_v12.sql`.
-
-## Notifikasi (patch_v13)
-Ikon 🔔 di aplikasi menampilkan notifikasi (pembayaran berhasil/ditolak, transfer baru untuk admin, tugas tagih baru untuk penagih). Jalankan `supabase/patch_v13.sql`. Notifikasi muncul seketika (Realtime) dan tersimpan sebagai riwayat.
-
-## Versi 2.2: tampilan baru + Absensi (patch_v14)
-Beranda dengan kartu utama dan menu cepat, bar bawah tetap tampil di semua halaman (menu lain lewat "Lainnya"). Absensi foto berwatermark (jam, lokasi, nama, koperasi, peta) wajib untuk penagih dan pemilik. Jalankan `supabase/patch_v14.sql`.
-
-## Absensi wajib & tampilan baru (patch_v14)
-Penagih dan pemilik wajib absen masuk setiap hari lewat kamera dengan watermark (jam, lokasi, nama, nama koperasi, peta). Jalankan `supabase/patch_v14.sql`. Navigasi bawah baru dengan menu "Lainnya" yang memuat semua menu termasuk Pengaturan.
-
-## Versi 2.2: tampilan fintech + Absensi (patch_v14)
-- Beranda bergaya aplikasi koperasi/fintech: kartu hero, menu cepat, navigasi bawah tetap, menu "Semua menu" berupa lembar dari bawah.
-- Absensi wajib masuk untuk pemilik & penagih: kamera langsung terbuka dengan watermark (jam, tanggal, alamat, nama, koperasi, kode foto, peta). Jalankan `supabase/patch_v14.sql`.
-
-## Absensi lengkap (patch_v15)
-Jenis: Absen Masuk, Nasabah Baru, Peminjam Baru, Istirahat, Selesai Istirahat, Absen Pulang. Semua lewat kamera dengan watermark. Jalankan `supabase/patch_v15.sql` (setelah patch_v14).
-
-## Perbaikan Absensi (v2.3.1)
-Tombol potret tidak lagi menunggu alamat/peta (diberi batas waktu), lokasi punya cadangan bila GPS lambat, dan tombol kegiatan selalu bisa diklik dengan penjelasan bila belum boleh.
-
-## Versi 2.4: navigasi modern + absensi tidak lagi memblokir login
-- Navigasi bawah bergaya aplikasi modern: ikon garis, tombol utama menonjol di tengah (Absensi untuk pemilik/penagih, Bayar untuk nasabah).
-- Absensi dibuka dari menu/tombol Absensi (tidak lagi dipaksa saat login). Jika belum absen masuk, beranda menampilkan pengingat.
-- File `AbsenGate.jsx` tidak dipakai lagi (boleh dihapus). File baru: `src/components/Ikon.jsx`.
-
-## Versi 2.4: navigasi modern + absensi tidak lagi memblokir
-- Absensi dibuka hanya saat menu Absensi diketuk. Pemilik/penagih yang belum absen masuk melihat pengingat kuning dan titik penanda, tetapi aplikasi tidak terkunci (AbsenGate dihapus).
-- Navigasi bawah baru: tab ikon garis, tombol tengah menonjol (Absensi untuk pemilik/penagih), dan "Lainnya". Ikon SVG di `src/components/Ikon.jsx`.
-
-## QRIS unggahan (patch_v16)
-Pemilik mengunggah gambar QRIS di Pengaturan → QRIS koperasi. Nasabah yang memilih QRIS melihat gambar itu, membayar, lalu mengunggah bukti; admin memverifikasi. Midtrans hanya dicoba bila mode "Midtrans + cadangan" dipilih. Jalankan `supabase/patch_v16.sql`.
+- Alamat dan peta absensi memakai OpenStreetMap (perlu internet; jika gagal, tampil koordinat).
+- Jam pada watermark memakai jam HP; waktu yang tersimpan memakai jam server (zona WITA untuk aturan harian).
+- Lokasi palsu dari aplikasi tertentu tidak diblokir.
+- Notifikasi saat aplikasi benar-benar tertutup (push server) belum tersedia.
