@@ -20,7 +20,7 @@ export default function QrisSetting() {
     } catch (e) { toast.error('Gagal mengunggah QRIS', e.message) } finally { setBusy(false) }
   }
   const simpanMode = async (m) => { setMode(m); const { error } = await supabase.from('koperasi').update({ qris_mode: m }).eq('id', kid); error ? toast.error('Gagal', error.message) : toast.success(m === 'upload' ? 'QRIS unggahan aktif' : 'Midtrans dicoba dulu, QRIS unggahan sebagai cadangan'); setKoperasi?.({ ...koperasi, qris_mode: m }) }
-  return <><div className="card space-y-3"><div className="flex items-center justify-between"><h2 className="font-bold">QRIS koperasi</h2><span className="text-[11px] bg-amber-100 text-amber-700 rounded-full px-2 py-1 font-bold">Hanya pemilik</span></div>
+  return <><div className="card space-y-3"><div className="flex items-center justify-between"><h2 className="font-bold">QRIS koperasi</h2><span className="text-[11px] bg-yellow-100 text-yellow-700 rounded-full px-2 py-1 font-bold">Hanya pemilik</span></div>
     <p className="text-xs text-slate-500">Unggah gambar QRIS koperasi. Saat nasabah memilih QRIS, gambar ini yang tampil, lalu mereka mengunggah bukti pembayaran untuk Anda verifikasi.</p>
     {galat && <p className="text-xs text-rose-600">{galat} · Jalankan patch_v16.sql di Supabase.</p>}
     <label className={`block rounded-2xl border-2 border-dashed p-4 text-center cursor-pointer transition ${url ? 'border-brand bg-brand-soft' : 'border-slate-300'}`}>

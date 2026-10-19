@@ -15,7 +15,7 @@ export default function TesMidtrans() {
     setBusy(false)
   }
   const belumAktif = res?.qris?.hasil?.some(h => /not activated|not active/i.test(h.pesan))
-  return <div className="card space-y-3"><div className="flex items-center justify-between"><h2 className="font-bold">🔌 Tes koneksi Midtrans</h2><span className="text-[11px] bg-amber-100 text-amber-700 rounded-full px-2 py-1 font-bold">Hanya pemilik</span></div>
+  return <div className="card space-y-3"><div className="flex items-center justify-between"><h2 className="font-bold">🔌 Tes koneksi Midtrans</h2><span className="text-[11px] bg-yellow-100 text-yellow-700 rounded-full px-2 py-1 font-bold">Hanya pemilik</span></div>
     <p className="text-xs text-slate-500">Tes 1 memeriksa Server Key dan mode. Tes 2 mencoba membuat QRIS uji Rp10.000 (tidak dibayar, kedaluwarsa sendiri).</p>
     <div className="grid grid-cols-2 gap-2"><button className="btn2" disabled={busy} onClick={() => tes(false)}>1. Tes key</button><button className="btn" disabled={busy} onClick={() => tes(true)}>2. Tes QRIS</button></div>
     {busy && <p className="text-xs text-slate-500">Memeriksa…</p>}

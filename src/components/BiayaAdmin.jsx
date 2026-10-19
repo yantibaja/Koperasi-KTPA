@@ -13,7 +13,7 @@ export default function BiayaAdmin() {
     const { error } = await supabase.from('fee_tenor').upsert(rows, { onConflict: 'koperasi_id,jenis,tenor' })
     error ? toast.error('Gagal', error.message) : toast.success('Fee tersimpan'); setBusy(false)
   }
-  return <div className="card space-y-3"><div className="flex items-center justify-between"><h2 className="font-bold">Fee per tenor</h2><span className="text-[11px] bg-amber-100 text-amber-700 rounded-full px-2 py-1 font-bold">Hanya pemilik</span></div>
+  return <div className="card space-y-3"><div className="flex items-center justify-between"><h2 className="font-bold">Fee per tenor</h2><span className="text-[11px] bg-yellow-100 text-yellow-700 rounded-full px-2 py-1 font-bold">Hanya pemilik</span></div>
     <p className="text-xs text-slate-500">Tidak terlihat oleh penagih dan nasabah. Dicatat pada setiap pinjaman sesuai tenornya.</p>
     {Object.entries(TENOR).map(([jenis, ts]) => <div key={jenis}><label className="lbl">{LABEL[jenis]}</label><div className="grid grid-cols-2 gap-2">{ts.map(t => <div key={t}><div className="text-[11px] text-slate-500 ml-1">{t} {jenis} · {rp(fee[`${jenis}-${t}`] || 0)}</div>
       <input className="inp" inputMode="numeric" value={fee[`${jenis}-${t}`] ?? ''} onChange={e => setFee({ ...fee, [`${jenis}-${t}`]: digits(e.target.value, 9) })} /></div>)}</div></div>)}
