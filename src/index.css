@@ -37,7 +37,8 @@ body{background:radial-gradient(700px 420px at 0% -5%,#e7e1ff 0,transparent 60%)
 .tile-ic{width:3.5rem;height:3.5rem;border-radius:1rem;display:grid;place-items:center;font-size:1.5rem;box-shadow:0 2px 8px rgba(80,60,200,.12);transition:transform .15s}
 .tile-ic:active{transform:scale(.9)}
 .dark .tile-ic{background:rgba(255,255,255,.1)!important}
-/* Cegah halaman melebar/zoom-out di HP: teks panjang boleh patah, tidak ada gulir samping */
-html,body{overflow-x:hidden;max-width:100%}
-body{overflow-wrap:anywhere}
+/* Cegah halaman melebar di HP tanpa membuat penampung gulir baru (tidak memakai overflow:hidden pada html/body) */
+.page{overflow-x:clip}
+.page,.card{overflow-wrap:anywhere}
+header button,nav button,nav a{white-space:nowrap;overflow-wrap:normal}
 input,select,textarea{min-width:0;max-width:100%}

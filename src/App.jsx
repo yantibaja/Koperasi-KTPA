@@ -5,6 +5,7 @@ import { useTheme } from './lib/theme'
 import { useNotif } from './lib/notif'
 import { supabase } from './lib/supabase'
 import { APP_VERSION } from './lib/version'
+import { useLibur } from './lib/libur'
 import Ikon from './components/Ikon'
 import NotifBell from './components/NotifBell'
 import InstallButton from './components/InstallButton'
@@ -44,7 +45,7 @@ const NAV = { admin: { kiri: ['/', '/pinjaman'], tengah: '/absensi', kanan: '/pe
   penagih: { kiri: ['/', '/pembayaran'], tengah: '/absensi', kanan: '/tambah-nasabah' }, nasabah: { kiri: ['/', '/pinjaman'], tengah: '/pembayaran', kanan: 'notif' } }
 const SHORT = { '/': 'Beranda', '/pinjaman': 'Pinjaman', '/pembayaran': 'Bayar', '/absensi': 'Absensi', '/nasabah': 'Nasabah', '/tambah-nasabah': 'Nasabah', '/koperasi': 'Koperasi' }
 export default function App() {
-  const { profile, koperasi, loading, logout } = useAuth(), nf = useNotif(), [open, setOpen] = useState(false), [dark, toggle] = useTheme(), loc = useLocation()
+  const { profile, koperasi, loading, logout } = useAuth(), nf = useNotif(), [open, setOpen] = useState(false), [dark, toggle] = useTheme(), loc = useLocation(), libur = useLibur()
   const wajib = !!profile && profile.status === 'approved' && ['admin', 'penagih'].includes(profile.role), [sudah, setSudah] = useState(true)
   useEffect(() => { // pengingat absen masuk (tidak memblokir aplikasi)
     const cek = async () => {
@@ -85,8 +86,9 @@ export default function App() {
     </aside>
     <main className="flex-1 min-w-0 pb-28 md:pb-0">
       <header className="md:hidden sticky top-0 z-10 flex items-center justify-between gap-2 bg-white/70 dark:bg-ink/70 backdrop-blur-xl px-4 py-2.5 border-b border-white/40 dark:border-white/10">
-        <div className="flex items-center gap-2 min-w-0"><img src={logo} className="w-8 h-8 rounded-xl" /><span className="font-extrabold text-sm truncate">{cur && cur[0] !== '/' ? cur[1] : nama}</span></div>
-        <div className="flex gap-2"><NotifBell /><button className="btn2 !py-2 !px-3" onClick={toggle} aria-label="Ganti tema"><Ikon n={dark ? 'sun' : 'moon'} size={18} /></button><button className="btn2 !py-2 !px-3 !text-rose-500 flex items-center gap-1.5" onClick={logout}><Ikon n="keluar" size={16} />Keluar</button></div></header>
+        <div className="flex items-center gap-2 min-w-0 flex-1"><img src={logo} className="w-8 h-8 rounded-xl shrink-0" /><span className="font-extrabold text-sm truncate">{cur && cur[0] !== '/' ? cur[1] : nama}</span></div>
+        <div className="flex gap-2 shrink-0"><NotifBell /><button className="btn2 !py-2 !px-3" onClick={toggle} aria-label="Ganti tema"><Ikon n={dark ? 'sun' : 'moon'} size={18} /></button><button className="btn2 !py-2 !px-3 !text-rose-500 flex items-center gap-1.5" onClick={logout}><Ikon n="keluar" size={16} />Keluar</button></div></header>
+      {libur && <div className="mx-4 md:mx-8 mt-3 flex items-center gap-2 rounded-2xl bg-sky-100 text-sky-900 px-4 py-3 text-sm font-semibold"><Ikon n="jam" size={18} /><span>Hari ini libur ({libur}): tidak ada jatuh tempo dan transaksi.</span></div>}
       {belumAbsen && loc.pathname !== '/absensi' && <Link to="/absensi" className="mx-4 md:mx-8 mt-3 flex items-center gap-3 rounded-2xl bg-yellow-100 text-yellow-900 px-4 py-3 text-sm font-semibold shadow-sm"><Ikon n="absen" size={20} /><span className="flex-1">Kamu belum absen masuk hari ini</span><span className="rounded-full bg-yellow-500 text-white px-3 py-1 text-xs font-bold">Absen sekarang</span></Link>}
       <div key={loc.pathname} className="page p-4 md:p-8 max-w-5xl mx-auto"><Routes>{items.map(([to, , , , El]) => <Route key={to} path={to} element={<El />} />)}<Route path="*" element={<Navigate to="/" />} /></Routes></div></main>
     <nav className="md:hidden fixed bottom-0 inset-x-0 z-20 bg-white/95 dark:bg-ink/95 backdrop-blur-xl border-t border-slate-200/70 dark:border-white/10" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
