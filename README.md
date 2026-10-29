@@ -4,7 +4,7 @@ Aplikasi manajemen koperasi simpan pinjam: pinjaman harian dan mingguan, tagihan
 
 **Teknologi:** React + Vite + TailwindCSS · Supabase (Auth, Database, Storage, Edge Functions) · GitHub Pages
 **Alamat:** https://yantibaja.github.io/Koperasi-KTPA/ · halaman harga publik: `/#/produk`
-**Versi saat ini:** 2.5.1 (tertulis di halaman masuk dan menu Lainnya)
+**Versi saat ini:** 2.6.0 (tertulis di halaman masuk dan menu Lainnya)
 
 ---
 ## 1. Role dan akses
@@ -30,7 +30,8 @@ Nasabah dan penagih mendaftar dengan **kode koperasi**; pemilik menyetujui di me
 - **Notifikasi** dalam aplikasi (ikon lonceng): pembayaran berhasil/ditolak, bukti baru, tugas tagih, absensi.
 - **Pesan WhatsApp:** template promo/sapaan/pengingat + tabel angsuran; tagih via WA.
 - **Bukti Penerimaan Pinjaman:** cetak terisi otomatis atau kosong (3 per A4).
-- Denda otomatis, tanggal merah, tugas tagih otomatis (cron), blokir NIK/No HP, hapus nasabah.
+- **Hari libur:** hari Minggu dan tanggal merah tidak ada jatuh tempo dan transaksi. Jatuh tempo yang jatuh pada hari libur otomatis digeser ke hari kerja berikutnya, termasuk saat pemilik menambah/menghapus tanggal merah. Pembayaran dan pinjaman baru ditolak pada hari libur.
+- Denda otomatis (tidak dihitung pada hari libur), tugas tagih otomatis (cron), blokir NIK/No HP, hapus nasabah.
 - **Tampilan:** navigasi bawah modern dengan tombol tengah menonjol, ikon garis, mode gelap, banner "Versi baru tersedia".
 
 ## 3. Struktur folder
@@ -68,11 +69,14 @@ Koperasi-KTPA/
 | `TesMidtrans.jsx` | `src/components/` | Tes koneksi Midtrans (opsional) |
 | `TabelAngsuran.jsx` | `src/components/` | Editor tabel cicilan |
 | `notif.jsx` | `src/lib/` | Mesin notifikasi + lembar riwayat |
+| `libur.js` | `src/lib/` | Aturan Minggu/tanggal merah dan jadwal jatuh tempo |
 | `theme.js` | `src/lib/` | Mode gelap |
 | `absen.js` | `src/lib/` | Lokasi, alamat, peta, watermark, jenis absensi |
 | `confirm.jsx` | `src/lib/` | Dialog konfirmasi |
 | `version.js` | `src/lib/` | Nomor versi |
+| `libur.js` | `src/lib/` | Aturan Minggu/tanggal merah: jadwal jatuh tempo, banner libur |
 | `Absensi.jsx` | `src/pages/` | Halaman absensi + kehadiran tim |
+| `libur.js` | `src/lib/` | Aturan Minggu dan tanggal merah (jadwal jatuh tempo, banner libur) |
 | `Bukti.jsx` · `Koperasi.jsx` · `Produk.jsx` · `TambahNasabah.jsx` | `src/pages/` | Bukti pinjaman, kelola koperasi, harga publik, tambah nasabah |
 | `bukti-bg.png` | `public/` | Latar bukti penerimaan pinjaman |
 | `manifest.webmanifest` · `sw.js` · `icon-*.png` | `public/` | PWA (bisa dipasang) |
@@ -95,6 +99,10 @@ Koperasi-KTPA/
 10. `patch_v14.sql` (absensi + bucket `absensi`)
 11. `patch_v15.sql` (enam jenis absensi + aturan urutan)
 12. `patch_v16.sql` (QRIS unggahan)
+13. `patch_v17.sql` (hari Minggu dan tanggal merah libur)
+13. `patch_v17.sql` (Minggu dan tanggal merah libur: jatuh tempo digeser, tanpa transaksi)
+13. `patch_v17.sql` (Minggu dan tanggal merah libur: geser jatuh tempo, blok transaksi, denda)
+13. `patch_v17.sql` (Minggu dan tanggal merah libur)
 
 `patch_v7.sql`, `patch_v9.sql`, dan `patch_v10.sql` sudah tergantikan dan **tidak perlu** dijalankan. Untuk database yang sudah berjalan, jalankan hanya patch yang belum pernah dijalankan.
 
@@ -109,7 +117,7 @@ where id=(select id from auth.users where email='GANTI@EMAIL.COM');
 ## 6. Edge Functions (opsional kecuali cek-tunggakan)
 | Nama persis | Fungsi | Verify JWT |
 |---|---|---|
-| `cek-tunggakan` | Hitung denda dan buat tugas tagih (tombol di Kelola Tim, bisa dijadwalkan cron) | Nyala |
+| `cek-tunggakan` | Hitung denda dan buat tugas tagih; dilewati pada hari Minggu dan tanggal merah (tombol di Kelola Tim, bisa dijadwalkan cron) | Nyala |
 | `create-qris` | QR otomatis Midtrans (hanya mode "Midtrans + cadangan") | Nyala |
 | `midtrans-cek` | Tes Server Key Midtrans | Nyala |
 | `midtrans-webhook` | Terima notifikasi pembayaran Midtrans | **Mati** |
@@ -129,16 +137,26 @@ Secret Midtrans (hanya jika dipakai): `MIDTRANS_SERVER_KEY` dan `MIDTRANS_PROD` 
 - **Absensi:** menu Absensi (tombol kamera di tengah) → pilih kegiatan → kamera terbuka → potret → Gunakan foto. Nasabah/Peminjam Baru meminta nama dulu. Izinkan Kamera dan Lokasi saat diminta.
 - **Pasang sebagai aplikasi:** tombol Pasang aplikasi di halaman masuk atau menu Lainnya.
 
+## 8b. Aturan libur
+- **Hari Minggu selalu libur**, begitu juga **tanggal merah** yang diisi pemilik di Pengaturan.
+- Jatuh tempo yang jatuh pada hari libur otomatis **digeser ke hari kerja berikutnya**. Harian: satu angsuran per hari kerja. Saat tanggal merah ditambah atau dihapus, jadwal yang belum jatuh tempo ikut disesuaikan otomatis.
+- **Tidak ada transaksi** (pembayaran baru dan pinjaman baru) pada hari libur; aplikasi menampilkan banner dan database menolaknya. Denda juga tidak dihitung pada hari libur.
+
 ## 9. Masalah umum
 | Gejala | Penyebab / solusi |
 |---|---|
 | Ikon Absensi kembali ke Beranda | `src/App.jsx` di GitHub masih versi lama; unggah versi terbaru |
 | Actions merah setelah unggah | Ada file yang terlewat (lihat tabel bagian 4) |
-| Layar tidak pas lebar / ada sisa kosong di kanan | Pastikan `index.css` dan `index.html` terbaru terunggah (versi 2.5.1) |
+| Halaman tidak bisa digulir / tombol Keluar terpotong | Unggah `index.css` dan `App.jsx` versi 2.6.0 |
+| Pembayaran/pinjaman ditolak "Hari ini libur" | Normal pada hari Minggu dan tanggal merah; coba lagi hari kerja |
+| Layar tidak pas lebar / halaman tidak bisa digulir | Pastikan `index.css` dan `index.html` terbaru terunggah (versi 2.6.0) |
+| "Hari ini libur" saat bayar atau buat pinjaman | Memang diblokir pada hari Minggu dan tanggal merah; coba lagi hari kerja berikutnya |
 | Banner kuning pudar / lencana tanpa warna | Unggah `tailwind.config.js` dan file komponen terbaru |
 | Kamera atau lokasi tidak bisa | Izinkan Kamera dan Lokasi: ketuk gembok di kolom alamat → Izin; buka lewat Chrome |
 | "QRIS koperasi belum diatur" | Pemilik belum mengunggah QRIS di Pengaturan |
 | Halaman Absensi menampilkan kotak merah | Jalankan `patch_v14.sql` lalu `patch_v15.sql` |
+| Halaman tidak bisa digulir / tombol Keluar terpotong | Unggah `index.css` dan `App.jsx` terbaru (versi 2.6.0) |
+| Pembayaran/pinjaman ditolak "Hari ini libur" | Aturan hari libur; coba lagi di hari kerja |
 | Tabel/kolom tidak ditemukan | Jalankan patch SQL yang belum dijalankan (urutan bagian 5) |
 | Notifikasi tidak muncul | Jalankan `patch_v13.sql` |
 | Midtrans: Unknown Merchant / channel not activated | Hanya relevan bila memakai mode Midtrans; lihat `PANDUAN-MIDTRANS.md` |
@@ -152,6 +170,10 @@ Secret Midtrans (hanya jika dipakai): `MIDTRANS_SERVER_KEY` dan `MIDTRANS_PROD` 
 | 2.4 | Navigasi bawah modern + ikon garis; absensi tidak lagi memblokir login |
 | 2.5 | QRIS unggahan menggantikan Midtrans sebagai bawaan |
 | 2.5.1 | Perbaikan layar melebar dan warna banner/lencana |
+| 2.6.0 | Aturan hari Minggu/tanggal merah libur, perbaikan gulir halaman |
+| 2.6 | Hari Minggu dan tanggal merah libur (jatuh tempo digeser otomatis, tanpa transaksi); perbaikan gulir dan tombol Keluar |
+| 2.6 | Hari Minggu dan tanggal merah libur (geser jatuh tempo, blok transaksi), perbaikan gulir dan tombol Keluar |
+| 2.6 | Hari Minggu dan tanggal merah libur: jatuh tempo digeser otomatis, tanpa transaksi (`patch_v17.sql`); perbaikan gulir dan tombol Keluar |
 
 ## 11. Batasan
 - Alamat dan peta absensi memakai OpenStreetMap (perlu internet; jika gagal, tampil koordinat).
