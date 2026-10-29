@@ -5,15 +5,10 @@ import { useToast } from '../lib/toast'
 import { useConfirm } from '../lib/confirm'
 import { Link } from 'react-router-dom'
 import { rp, tgl } from '../lib/utils'
-const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-const jatuhTempo = (i, satuan) => {
-  const n = new Date(); if (satuan === 'hari') return ymd(new Date(n.getFullYear(), n.getMonth(), n.getDate() + i + 1))
-  if (satuan === 'minggu') return ymd(new Date(n.getFullYear(), n.getMonth(), n.getDate() + 7 * (i + 1)))
-  const t = new Date(n.getFullYear(), n.getMonth() + i + 1, 1), last = new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate(); t.setDate(Math.min(n.getDate(), last)); return ymd(t)
-}
+import { jadwal, ambilMerah, useLibur } from '../lib/libur'
 const F0 = { nasabah_id: '', satuan: 'hari', pokok: 0, tenor: 0 }
 export default function Pinjaman() {
-  const { profile } = useAuth(), toast = useToast(), ask = useConfirm(), admin = profile.role !== 'nasabah'
+  const { profile } = useAuth(), toast = useToast(), ask = useConfirm(), admin = profile.role !== 'nasabah', libur = useLibur()
   const [rows, setRows] = useState([]), [nas, setNas] = useState([]), [tabel, setTabel] = useState([]), [kops, setKops] = useState([]), [admMap, setAdmMap] = useState({}), [f, setF] = useState(F0), [edit, setEdit] = useState(null), [show, setShow] = useState(null)
   const load = async () => {
     const { data } = await supabase.from('pinjaman').select('*, nasabah:profiles(nama), angsuran(*)').order('created_at', { ascending: false }); setRows(data || [])
@@ -26,8 +21,9 @@ export default function Pinjaman() {
   const cicilan = +T.find(t => +t.pokok === f.pokok && t.tenor === f.tenor)?.cicilan || 0, total = cicilan * f.tenor, adm = +kops.find(k => k.koperasi_id === kid && k.jenis === f.satuan && k.tenor === f.tenor)?.fee_rp || 0
   const batal = () => { setEdit(null); setF(F0) }
   const mulaiEdit = (p) => { setEdit(p); setF({ nasabah_id: p.nasabah_id, satuan: p.satuan_tenor || 'bulan', pokok: +p.pokok, tenor: p.tenor }); window.scrollTo({ top: 0, behavior: 'smooth' }) }
-  const buatAngsuran = (pid) => supabase.from('angsuran').insert(Array.from({ length: f.tenor }, (_, i) => ({ pinjaman_id: pid, koperasi_id: kid, nasabah_id: f.nasabah_id, ke: i + 1, jumlah: cicilan, jatuh_tempo: jatuhTempo(i, f.satuan) })))
+  const buatAngsuran = async (pid) => { const tg = jadwal(f.tenor, f.satuan, await ambilMerah(kid)); return supabase.from('angsuran').insert(tg.map((d, i) => ({ pinjaman_id: pid, koperasi_id: kid, nasabah_id: f.nasabah_id, ke: i + 1, jumlah: cicilan, jatuh_tempo: d }))) }
   const simpan = async () => {
+    if (libur && !edit) return toast.error('Hari ini libur', `${libur}: tidak ada transaksi. Coba lagi besok.`)
     if (!f.nasabah_id) return toast.info('Pilih nasabah dulu'); if (!cicilan) return toast.info('Pilih pokok dan tenor')
     if (total < f.pokok) return toast.error('Tarif tidak wajar', 'Total bayar lebih kecil dari pokok. Perbaiki di Pengaturan → Tabel angsuran.')
     const data = { pokok: f.pokok, bunga_rp: Math.round(cicilan - f.pokok / f.tenor), bunga_persen: 0, tenor: f.tenor, satuan_tenor: f.satuan }
@@ -51,6 +47,7 @@ export default function Pinjaman() {
   const status = async (p, s) => { const { error } = await supabase.from('pinjaman').update({ status: s }).eq('id', p.id); error ? toast.error('Gagal', error.message) : toast.success('Status diubah'); load() }
   const chip = (on, onClick, t) => <button key={t} onClick={onClick} className={`px-3 py-2 rounded-xl text-sm font-bold border ${on ? 'bg-brand text-white border-brand' : 'bg-white border-slate-200'}`}>{t}</button>
   return <div className="space-y-4"><h1 className="judul">Pinjaman</h1>
+    {libur && <div className="rounded-2xl bg-sky-100 text-sky-900 px-4 py-3 text-sm font-semibold">Hari ini libur ({libur}): tidak ada jatuh tempo dan transaksi.</div>}
     {admin && <div className="card space-y-3"><div className="flex justify-between items-center"><h2 className="font-bold">{edit ? `Edit pinjaman · ${edit.nasabah?.nama}` : 'Pinjaman baru'}</h2>{edit && <button className="btn2 !py-1.5" onClick={batal}>Batal</button>}</div>
       <select disabled={!!edit} className="inp" value={f.nasabah_id} onChange={e => setF({ ...f, nasabah_id: e.target.value, pokok: 0, tenor: 0 })}><option value="">Pilih nasabah</option>{nas.map(n => <option key={n.id} value={n.id}>{n.nama}</option>)}</select>
       <div className="flex rounded-2xl bg-slate-100 p-1">{['hari', 'minggu'].map(s => <button key={s} onClick={() => setF({ ...f, satuan: s, pokok: 0, tenor: 0 })} className={`flex-1 py-2 rounded-xl text-sm font-bold ${f.satuan === s ? 'bg-white shadow text-brand-dark' : 'text-slate-500'}`}>{{ hari: 'Harian', minggu: 'Mingguan', bulan: 'Bulanan' }[s]}</button>)}</div>

@@ -30,9 +30,10 @@ export default function Pengaturan() {
       {[['nama_bank', 'Nama bank'], ['no_rekening', 'No rekening'], ['nama_pemilik', 'Nama pemilik']].map(([x, lb]) => <input key={x} className="inp" placeholder={lb} value={b[x] || ''} onChange={e => setB({ ...b, [x]: e.target.value })} />)}
       <button className="btn" onClick={async () => { await supabase.from('bank_accounts').insert({ ...b, koperasi_id: kid }); setB({}); load() }}>Tambah rekening</button></div>
     <div className="card space-y-2"><h2 className="font-bold">Tanggal merah / libur</h2>
-      {libur.map(x => <div key={x.id} className="flex justify-between text-sm"><span>{x.tanggal} — {x.keterangan}</span><button className="text-red-600" onClick={async () => { await supabase.from('tanggal_merah').delete().eq('id', x.id); load() }}>Hapus</button></div>)}
+      <p className="text-xs text-slate-500">Hari Minggu otomatis libur. Jatuh tempo yang jatuh pada hari libur digeser ke hari kerja berikutnya, dan tidak ada transaksi pada hari libur.</p>
+      {libur.map(x => <div key={x.id} className="flex justify-between text-sm"><span>{x.tanggal} — {x.keterangan}</span><button className="text-red-600" onClick={async () => { await supabase.from('tanggal_merah').delete().eq('id', x.id); toast.info('Tanggal merah dihapus', 'Jadwal jatuh tempo disusun ulang.'); load() }}>Hapus</button></div>)}
       <input type="date" className="inp" value={l.tanggal || ''} onChange={e => setL({ ...l, tanggal: e.target.value })} /><input className="inp" placeholder="Keterangan" value={l.keterangan || ''} onChange={e => setL({ ...l, keterangan: e.target.value })} />
-      <button className="btn" onClick={async () => { await supabase.from('tanggal_merah').insert({ ...l, koperasi_id: kid }); setL({}); load() }}>Tambah libur</button></div>
+      <button className="btn" onClick={async () => { if (!l.tanggal) return toast.info('Pilih tanggal dulu'); const { error } = await supabase.from('tanggal_merah').insert({ ...l, koperasi_id: kid }); error ? toast.error('Gagal', error.message) : toast.success('Tanggal merah ditambahkan', 'Jatuh tempo pada tanggal ini digeser otomatis ke hari kerja berikutnya.'); setL({}); load() }}>Tambah libur</button></div>
     <BiayaAdmin />
     <QrisSetting />
     <TabelAngsuran />

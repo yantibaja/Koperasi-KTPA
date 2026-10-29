@@ -6,9 +6,10 @@ import { useToast } from '../lib/toast'
 import { rp, tgl, compress } from '../lib/utils'
 import Foto from '../lib/Foto'
 import Ikon from '../components/Ikon'
+import { useLibur } from '../lib/libur'
 const MET = { QRIS: ['qris', 'QRIS', 'Scan lalu upload bukti'], TRANSFER: ['bank', 'Transfer', 'Upload bukti transfer'], CASH: ['tunai', 'Tunai', 'Bayar langsung'] }
 export default function Pembayaran() {
-  const { profile } = useAuth(), toast = useToast(), r = profile.role, adm = r === 'admin' || r === 'super_admin'
+  const { profile } = useAuth(), toast = useToast(), r = profile.role, adm = r === 'admin' || r === 'super_admin', libur = useLibur()
   const metode = r === 'nasabah' ? ['QRIS', 'TRANSFER'] : r === 'penagih' ? ['CASH', 'TRANSFER'] : ['QRIS', 'TRANSFER', 'CASH']
   const [tag, setTag] = useState(null), [banks, setBanks] = useState([]), [ver, setVer] = useState([]), [sel, setSel] = useState(null), [m, setM] = useState(null), [bank, setBank] = useState(''), [file, setFile] = useState(null), [prev, setPrev] = useState(''), [qr, setQr] = useState(null), [busy, setBusy] = useState(false), [all, setAll] = useState(false), [q, setQ] = useState(''), [ok, setOk] = useState(null), [info, setInfo] = useState(null)
   const load = async () => {
@@ -22,7 +23,7 @@ export default function Pembayaran() {
     if (!qr || !sel || ok) return; let n = 0
     const t = setInterval(async () => { n++; const { data } = await supabase.from('angsuran').select('status').eq('id', sel.id).single(); if (data?.status === 'lunas') { clearInterval(t); setOk({ judul: 'Pembayaran berhasil 🎉', isi: 'QRIS diterima, angsuran dinyatakan lunas.', jumlah: total }); load() } if (n > 150) clearInterval(t) }, 4000)
     return () => clearInterval(t) }, [qr, sel, ok])
-  const buka = (a) => { setOk(null); setSel(a); setM(null); setBank(''); setFile(null); setPrev(''); setQr(null); setInfo(null)
+  const buka = (a) => { if (libur) return toast.info('Hari ini libur', `${libur}: tidak ada transaksi. Silakan coba besok.`); setOk(null); setSel(a); setM(null); setBank(''); setFile(null); setPrev(''); setQr(null); setInfo(null)
     supabase.from('koperasi').select('qris_url,qris_mode').eq('id', a.koperasi_id).maybeSingle().then(({ data }) => setInfo(data || {})) }
   const pilihFile = (f) => { if (f && f.size > 10e6) return toast.error('File terlalu besar', 'Maksimal 10 MB'); setFile(f || null); setPrev(f ? URL.createObjectURL(f) : '') }
   const bankNama = (id) => { const x = banks.find(b => b.id === id); return x ? `${x.nama_bank} ${x.no_rekening}` : '-' }
@@ -67,6 +68,7 @@ export default function Pembayaran() {
   const rest = r === 'nasabah' && list.length ? list.slice(1) : list, tampil = all ? rest : rest.slice(0, 5)
   const bankSel = banks.filter(b => !sel || b.koperasi_id === sel.koperasi_id)
   return <div className="space-y-4"><h1 className="judul">Pembayaran</h1>
+    {libur && <div className="rounded-2xl bg-sky-100 text-sky-900 px-4 py-3 text-sm font-semibold">Hari ini libur ({libur}): tidak ada jatuh tempo dan transaksi.</div>}
     {adm && ver.length > 0 && <div className="card space-y-3"><h2 className="font-bold">Verifikasi pembayaran ({ver.length})</h2>
       {ver.map(v => <div key={v.id} className="border-t pt-3 space-y-2"><div className="flex justify-between text-sm"><span><b>{v.nasabah?.nama}</b><br /><span className="text-slate-500">{v.metode === 'QRIS' ? 'QRIS' : bankNama(v.bank_id)}</span></span><b>{rp(v.jumlah)}</b></div>
         <div className="flex items-center gap-3"><Foto bucket="bukti_transfer" path={v.bukti_url} l="Bukti" /><div className="flex gap-2 flex-1 justify-end"><button className="btn !py-2" onClick={() => verif(v.id, true)}>Terima</button><button className="btn2 !py-2" onClick={() => verif(v.id, false)}>Tolak</button></div></div></div>)}</div>}
